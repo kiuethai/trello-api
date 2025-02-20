@@ -16,14 +16,13 @@ const createNew = async (req, res, next) => {
       'string.min': 'Description length must be at least 13 characters long',
       'string.max': 'Description length must be less than or equal to 250 characters long',
       'string.trim': 'Description must not have leading or trailing whitespace'
-    }),
+    })
   })
 
   try {
-    //console.log(req.body)
     await correctCondition.validateAsync(req.body, { abortEarly: false })
-    // next()
-    res.status(StatusCodes.CREATED).json({ message: ' POST:  API create list boards' })
+    // Validate dữ liệu xong xuôi hợp lệ thì cho request đii tiếp sang controller
+    next()
   } catch (error) {
     res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
       errors: new Error(error).message
@@ -31,7 +30,7 @@ const createNew = async (req, res, next) => {
   }
 }
 
-export const broadValidation = {
+export const boardValidation = {
   createNew
 }
 
