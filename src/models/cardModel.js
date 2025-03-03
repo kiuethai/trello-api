@@ -23,6 +23,7 @@ const validateBeforeCreate = async (data) => {
 const createNew = async (data) => {
   try {
     const validData = await validateBeforeCreate(data)
+
     const newCardToAdd = {
       ...validData,
       boardId: new ObjectId(validData.boardId),
