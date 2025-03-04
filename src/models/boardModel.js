@@ -90,7 +90,10 @@ const update = async (boardId, updateData) => {
         delete updateData[fieldName]
       }
     })
-
+    // Đối với những dữ liệu liên quan ObjectId, biến đổi ở đây
+    if (updateData.columnOrderIds) {
+      updateData.columnOrderIds = updateData.columnOrderIds.map(_id => (new ObjectId(_id)))
+    }
     console.log('updateData: ', updateData)
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(boardId) },
