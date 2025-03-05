@@ -25,9 +25,16 @@ const START_SERVER = () => {
   // Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
-  app.listen(env.APP_PORT, env.APP_HOST, () => {
-    console.log(`Hello ${env.AUTHOR}, test ${env.BUILD_MODE}  I am running at ${env.APP_HOST}:${env.APP_PORT}/`)
-  })
+  if (env.BUILD_MODE === 'production') {
+    app.listen(process.env.PORT, () => {
+      console.log(`3. Production: Hello ${env.AUTHOR}, am running at ${process.env.PORT}`)
+    })
+  } else {
+    app.listen(env.LOCAL_DEV_APP_PORT, env.LOCAL_DEV_APP_HOST, () => {
+      console.log(`Hello ${env.AUTHOR}, test ${env.BUILD_MODE}  I am running at ${env.LOCAL_DEV_APP_HOST}:${env.LOCAL_DEV_APP_PORT}/`)
+    })
+  }
+
 
   exitHook(() => {
     console.log('4. Server is shutting down....')
