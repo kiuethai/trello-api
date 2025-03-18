@@ -33,29 +33,42 @@ const validateBeforeCreate = async (data) => {
   return await BOARD_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
 }
 
-const createNew = async (data) => {
+const createNew = async (userId, data) => {
   try {
     const validData = await validateBeforeCreate(data)
-    return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(validData)
+    const newBoardToAdd = {
+      ...validData,
+      ownerIds: [new ObjectId(userId)]
+    }
+    return await GET_DB().collection(BOARD_COLLECTION_NAME).insertOne(newBoardToAdd)
   } catch (error) { throw new Error(error) }
 }
+
 const findOneById = async (id) => {
   try {
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
     return result
   } catch (error) { throw new Error(error) }
 }
+
 // Query tổng hợp (aggregate) để lấy toàn bộ Columns và Card thuộc về Board
-const getDetails = async (id) => {
+const getDetails = async (userId, boardId) => {
   try {
+    const queryConditions = [
+      { _id: new ObjectId(boardId) },
+      // Đk 1: Board chưa bị xóa
+      { _destroy: false },
+      // Đk 2: cái thằng userId đang thực hiện request này nó phải thuộc vào một trong 2 cái mảng ownerIds hoawjce memberIds, sử dụng toán tử $all của mongodb
+      {
+        $or: [
+          { ownerIds: { $all: [new ObjectId(userId)] } },
+          { memberIds: { $all: [new ObjectId(userId)] } }
+        ]
+      }
+    ]
     // const result = await GET_DB().collection(BOARD_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
     const result = await GET_DB().collection(BOARD_COLLECTION_NAME).aggregate([
-      {
-        $match: {
-          _id: new ObjectId(id),
-          _destroy: false
-        }
-      },
+      { $match: { $and: queryConditions } },
       {
         $lookup: {
           from: columnModel.COLUMN_COLLECTION_NAME,
@@ -76,6 +89,7 @@ const getDetails = async (id) => {
     return result[0] || null
   } catch (error) { throw new Error(error) }
 }
+
 // Nhiệm vụ của func này là push một cái giá trị columnId vào cuối mảng columnOrderIds
 const pushColumnOrderIds = async (column) => {
   try {
@@ -122,6 +136,7 @@ const update = async (boardId, updateData) => {
     return result
   } catch (error) { throw new Error(error) }
 }
+
 const getBoards = async (userId, page, itemsPerPage) => {
   try {
     const queryConditions = [
@@ -160,8 +175,6 @@ const getBoards = async (userId, page, itemsPerPage) => {
       // Khai báo thêm thuộc tính collation 'en' để fix vụ chữ B hoa và a thường ở trên
       { collection: { local: 'en' } }
     ).toArray()
-   // console.log('🚀 ~ getBoards ~ query:', query)
-
     const res = query[0]
 
     return {
