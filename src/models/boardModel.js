@@ -34,6 +34,7 @@ const validateBeforeCreate = async (data) => {
 }
 
 const createNew = async (userId, data) => {
+  
   try {
     const validData = await validateBeforeCreate(data)
     const newBoardToAdd = {
