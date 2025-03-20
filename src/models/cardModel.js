@@ -73,9 +73,8 @@ const update = async (cardId, updateData) => {
     const result = await GET_DB().collection(CARD_COLLECTION_NAME).findOneAndUpdate(
       { _id: new ObjectId(cardId) },
       { $set: updateData },
-      { ReturnDocument: 'after' }
+      { returnDocument: 'after' } // sẽ trả về kết quả mới sau khi cập nhật
     )
-
     return result
   } catch (error) { throw new Error(error) }
 }
