@@ -1,4 +1,3 @@
-import { slugify } from '~/utils/formatters'
 import { cardModel } from '~/models/cardModel'
 import { columnModel } from '~/models/columnModel'
 import { CloudinaryProvider } from '~/providers/CloudinaryProvider'
@@ -20,7 +19,7 @@ const createNew = async (reqBody) => {
   } catch (error) { throw error }
 }
 
-const update = async (cardId, reqBody, cardCoverFile) => {
+const update = async (cardId, reqBody, cardCoverFile, userInfo) => {
   try {
     const updateData = {
       ...reqBody,
@@ -30,12 +29,19 @@ const update = async (cardId, reqBody, cardCoverFile) => {
     let updatedCard = {}
 
     if (cardCoverFile) {
-      // console.log('🚀 ~ cardService ~ cardCoverFile:', cardCoverFile); // Debug
       // Trường hợp upload file lên Cloud Storage
       const uploadResult = await CloudinaryProvider.streamUpload(cardCoverFile.buffer, 'card-covers')
-      // console.log('🚀 ~ cardService ~ uploadResult:', uploadResult); // Debug
       // Lưu lại url của file ảnh vào trong Database
       updatedCard = await cardModel.update(cardId, { cover: uploadResult?.secure_url })
+    } else if (updateData.commentToAdd) {
+      // tạo dữ liệu commit để thêm vào database, cần bổ sung thêm những field cần thiết
+      const commentData = {
+        ...updateData.commentToAdd,
+        commentedAt: Date.now(),
+        userId: userInfo._id,
+        userEmail: userInfo.email
+      }
+      updatedCard = await cardModel.unshiftNewComment(cardId, commentData)
     } else {
       // Các trường hợp update chung như title, description
       updatedCard = await cardModel.update(cardId, updateData)
