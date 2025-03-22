@@ -17,7 +17,7 @@ const INVITATION_COLLECTION_SCHEMA = Joi.object({
   // Lời mời là board thì sẽ lưu thêm dữ liệu boardInvitation - optional
   boardInvitation: Joi.object({
     boardId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-    status: Joi.string().required().valid()
+    status: Joi.string().required().valid(...Object.values(BOARD_INVITATION_STATUS))
   }).optional(),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
@@ -87,11 +87,50 @@ const update = async (invitationId, updateData) => {
   } catch (error) { throw new Error(error) }
 }
 
+const findByUser = async (userId) => {
+  try {
+    const queryConditions = [
+      { inviteeId: new ObjectId(userId) }, // Tìm theo inviteeId - người được mời - chính là người đang thực hiện request này
+      { _destroy: false }
 
+    ]
+    const results = await GET_DB().collection(INVITATION_COLLECTION_NAME).aggregate([
+      { $match: { $and: queryConditions } },
+      {
+        $lookup: {
+          from: userModel.USER_COLLECTION_NAME,
+          localField: 'inviterId', // Người đi mời
+          foreignField: '_id',
+          as: 'inviter',
+          pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+        }
+      },
+      {
+        $lookup: {
+          from: userModel.USER_COLLECTION_NAME,
+          localField: 'inviteeId', // Người được mời
+          foreignField: '_id',
+          as: 'invitee',
+          pipeline: [{ $project: { 'password': 0, 'verifyToken': 0 } }]
+        }
+      },
+      {
+        $lookup: {
+          from: boardModel.BOARD_COLLECTION_NAME,
+          localField: 'boardInvitation.boardId', // thông tin của board
+          foreignField: '_id',
+          as: 'board'
+        }
+      }
+    ]).toArray()
+    return results
+  } catch (error) { throw new Error(error) }
+}
 export const invitationModel = {
   INVITATION_COLLECTION_NAME,
   INVITATION_COLLECTION_SCHEMA,
   createNewBoardInvitation,
   findOneById,
-  update
+  update,
+  findByUser
 }
