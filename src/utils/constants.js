@@ -4,7 +4,7 @@ import { env } from '~/config/environment'
 
 export const WHITELIST_DOMAINS = [
   'http://localhost:5173',
-  'https://trello-clone-phi-wheat.vercel.app'
+  'https://trello-clone-git-master-kieuthai1s-projects.vercel.app/'
 ]
 export const BOARD_TYPES = {
   PUBLIC: 'public',
