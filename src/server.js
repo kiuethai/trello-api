@@ -38,7 +38,10 @@ const START_SERVER = () => {
   // Tạo một cái server mới bọc thằng app của express để làm real-time với socket.io
   const server = http.createServer(app)
   // Khởi tạo biến io với server và cors
-  const io = socketIo(server, { cors: corsOptions })
+  const io = socketIo(server, {
+    cors: corsOptions,
+    transports: ['websocket', 'polling']
+  })
   io.on('connection', (socket) => {
     // Gọi các socket tùy theo tính năng ở đây
     inviteUserToBoardSocket(socket)
