@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)
 
 <p align="center">
-  <img src="https://base.vn/wp-content/uploads/2024/06/trello-la-gi.webp" alt="Trello API Banner" width="600px" />
+  <img src=(https://base.vn/wp-content/uploads/2024/06/trello-la-gi.webp) alt="Trello API Banner" width="600px" />
 </p>
 
 **A powerful JavaScript wrapper for the Trello REST API**
